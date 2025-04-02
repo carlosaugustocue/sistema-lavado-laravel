@@ -160,3 +160,243 @@ Si tienes preguntas sobre el proyecto, no dudes en contactarme:
   <p>Desarrollado con ❤️ para optimizar tu negocio de lavado de vehículos</p>
   <p>© 2025 . Todos los derechos reservados.</p>
 </div>
+
+
+## Consultas para Clientes
+
+### Listar todos los clientes ordenados por apellido y nombre
+```sql
+SELECT * FROM clientes ORDER BY apellido, nombre;
+```
+
+### Buscar un cliente por nombre o apellido
+```sql
+SELECT * FROM clientes 
+WHERE nombre LIKE '%término_búsqueda%' 
+OR apellido LIKE '%término_búsqueda%';
+```
+
+### Obtener un cliente específico con sus vehículos
+```sql
+SELECT c.*, v.* 
+FROM clientes c
+LEFT JOIN vehiculos v ON c.id = v.cliente_id
+WHERE c.id = 1;
+```
+
+## Consultas para Vehículos
+
+### Listar todos los vehículos con información del cliente
+```sql
+SELECT v.*, c.nombre, c.apellido
+FROM vehiculos v
+JOIN clientes c ON v.cliente_id = c.id
+ORDER BY v.placa;
+```
+
+### Buscar vehículo por placa
+```sql
+SELECT v.*, c.nombre, c.apellido
+FROM vehiculos v
+JOIN clientes c ON v.cliente_id = c.id
+WHERE v.placa = 'ABC123';
+```
+
+### Historial de lavados de un vehículo específico
+```sql
+SELECT l.*, s.nombre as servicio_nombre, s.precio
+FROM lavados l
+JOIN servicios s ON l.servicio_id = s.id
+WHERE l.vehiculo_id = 1
+ORDER BY l.created_at DESC;
+```
+
+## Consultas para Empleados
+
+### Listar todos los empleados activos
+```sql
+SELECT * FROM empleados WHERE activo = 1 ORDER BY apellido, nombre;
+```
+
+### Obtener lavados recibidos por un empleado
+```sql
+SELECT l.*, v.placa, s.nombre as servicio_nombre
+FROM lavados l
+JOIN vehiculos v ON l.vehiculo_id = v.id
+JOIN servicios s ON l.servicio_id = s.id
+WHERE l.empleado_id = 1;
+```
+
+### Obtener lavados asignados a un empleado
+```sql
+SELECT l.*, v.placa, s.nombre as servicio_nombre
+FROM lavados l
+JOIN vehiculos v ON l.vehiculo_id = v.id
+JOIN servicios s ON l.servicio_id = s.id
+WHERE l.empleado_asignado_id = 1;
+```
+
+### Obtener carga de trabajo por empleado (lavados pendientes)
+```sql
+SELECT e.id, e.nombre, e.apellido, COUNT(l.id) as lavados_pendientes
+FROM empleados e
+LEFT JOIN lavados l ON e.id = l.empleado_asignado_id
+WHERE e.activo = 1 AND (l.estado = 'pendiente' OR l.estado = 'en_proceso')
+GROUP BY e.id, e.nombre, e.apellido;
+```
+
+## Consultas para Turnos
+
+### Listar turnos por fecha
+```sql
+SELECT t.*, e.nombre, e.apellido 
+FROM turnos t
+JOIN empleados e ON t.empleado_id = e.id
+WHERE DATE(t.fecha) = '2023-04-02'
+ORDER BY t.hora_inicio;
+```
+
+### Obtener todos los turnos del mes actual
+```sql
+SELECT t.*, e.nombre, e.apellido 
+FROM turnos t
+JOIN empleados e ON t.empleado_id = e.id
+WHERE t.fecha BETWEEN '2023-04-01' AND '2023-04-30'
+ORDER BY t.fecha, t.hora_inicio;
+```
+
+## Consultas para Lavados
+
+### Listar todos los lavados con información relacionada
+```sql
+SELECT l.*, v.placa, s.nombre as servicio, 
+       c.nombre as cliente_nombre, c.apellido as cliente_apellido,
+       e1.nombre as recibido_por, e2.nombre as asignado_a
+FROM lavados l
+JOIN vehiculos v ON l.vehiculo_id = v.id
+JOIN servicios s ON l.servicio_id = s.id
+JOIN clientes c ON v.cliente_id = c.id
+JOIN empleados e1 ON l.empleado_id = e1.id
+LEFT JOIN empleados e2 ON l.empleado_asignado_id = e2.id
+ORDER BY l.created_at DESC;
+```
+
+### Listar servicios pendientes
+```sql
+SELECT l.*, v.placa, s.nombre as servicio, 
+       c.nombre as cliente_nombre, c.apellido as cliente_apellido
+FROM lavados l
+JOIN vehiculos v ON l.vehiculo_id = v.id
+JOIN servicios s ON l.servicio_id = s.id
+JOIN clientes c ON v.cliente_id = c.id
+WHERE l.estado IN ('pendiente', 'en_proceso')
+ORDER BY l.hora_entrada ASC;
+```
+
+### Obtener insumos utilizados en un lavado específico
+```sql
+SELECT u.*, i.nombre, i.unidad_medida, i.costo
+FROM uso_insumos u
+JOIN insumos i ON u.insumo_id = i.id
+WHERE u.lavado_id = 1;
+```
+
+## Consultas para Servicios
+
+### Listar todos los servicios activos
+```sql
+SELECT * FROM servicios WHERE activo = 1 ORDER BY nombre;
+```
+
+### Calcular tiempo promedio por tipo de servicio
+```sql
+SELECT s.id, s.nombre, 
+       AVG(TIMESTAMPDIFF(MINUTE, l.hora_entrada, l.hora_salida)) as promedio_minutos,
+       COUNT(l.id) as total_lavados
+FROM lavados l
+JOIN servicios s ON l.servicio_id = s.id
+WHERE l.hora_salida IS NOT NULL AND l.estado = 'completado'
+GROUP BY s.id, s.nombre;
+```
+
+## Consultas para Insumos
+
+### Listar todos los insumos ordenados por nombre
+```sql
+SELECT * FROM insumos ORDER BY nombre;
+```
+
+### Identificar insumos con stock bajo
+```sql
+SELECT * FROM insumos 
+WHERE stock_actual <= stock_minimo
+ORDER BY stock_actual / stock_minimo ASC;
+```
+
+### Historial de uso de un insumo específico
+```sql
+SELECT u.*, l.id as lavado_id, v.placa, u.cantidad, u.created_at
+FROM uso_insumos u
+JOIN lavados l ON u.lavado_id = l.id
+JOIN vehiculos v ON l.vehiculo_id = v.id
+WHERE u.insumo_id = 1
+ORDER BY u.created_at DESC;
+```
+
+## Consultas para Reportes
+
+### Reporte de ingresos diarios
+```sql
+SELECT 
+    DATE(created_at) as fecha,
+    COUNT(*) as total_servicios,
+    SUM(costo_total) as total_ingresos
+FROM lavados
+WHERE estado IN ('completado', 'entregado')
+GROUP BY DATE(created_at)
+ORDER BY fecha DESC;
+```
+
+### Ingresos por tipo de servicio en una fecha específica
+```sql
+SELECT 
+    s.nombre as servicio,
+    COUNT(l.id) as cantidad,
+    SUM(l.costo_total) as total
+FROM lavados l
+JOIN servicios s ON l.servicio_id = s.id
+WHERE DATE(l.created_at) = '2023-04-02'
+    AND l.estado IN ('completado', 'entregado')
+GROUP BY s.nombre;
+```
+
+### Consumo de insumos en un período
+```sql
+SELECT 
+    i.nombre,
+    i.unidad_medida,
+    SUM(u.cantidad) as cantidad_total,
+    SUM(u.cantidad * i.costo) as costo_total
+FROM uso_insumos u
+JOIN insumos i ON u.insumo_id = i.id
+JOIN lavados l ON u.lavado_id = l.id
+WHERE l.created_at BETWEEN '2023-04-01' AND '2023-04-30'
+GROUP BY i.nombre, i.unidad_medida;
+```
+
+### Rendimiento de empleados (lavados completados)
+```sql
+SELECT 
+    e.nombre,
+    e.apellido,
+    COUNT(l.id) as lavados_completados,
+    AVG(TIMESTAMPDIFF(MINUTE, l.hora_entrada, l.hora_salida)) as tiempo_promedio
+FROM lavados l
+JOIN empleados e ON l.empleado_asignado_id = e.id
+WHERE l.estado = 'completado'
+    AND l.created_at BETWEEN '2023-04-01' AND '2023-04-30'
+GROUP BY e.nombre, e.apellido
+ORDER BY lavados_completados DESC;
+```
+
+Estas consultas SQL representan las principales operaciones de la aplicación de lavado de vehículos. Pueden servir como referencia para entender la estructura de datos y también para realizar consultas directas a la base de datos si fuera necesario.

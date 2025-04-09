@@ -52,4 +52,9 @@ class Lavado extends Model
     {
         return $this->hasMany(UsoInsumo::class);
     }
+
+    public function evaluacion()
+{
+    return $this->hasOne(Evaluacion::class);
+}
 }

@@ -120,10 +120,63 @@
                             </a>
                         </li>
                         <li class="nav-item">
-    <a class="nav-link" href="{{ route('turnos.index') }}">
-        <i class="fas fa-calendar-alt me-2"></i> Turnos
-    </a>
-</li>
+                            <a class="nav-link" href="{{ route('turnos.index') }}">
+                                <i class="fas fa-calendar-alt me-2"></i> Turnos
+                            </a>
+                        </li>
+                        
+                        <!-- NUEVOS MÓDULOS -->
+                        <!-- Evaluaciones -->
+                        <li class="nav-item">
+                            <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseEvaluaciones" aria-expanded="false">
+                                <i class="fas fa-star me-2"></i> Evaluaciones
+                            </a>
+                            <div class="collapse" id="collapseEvaluaciones">
+                                <ul class="nav flex-column ms-3">
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{{ route('evaluaciones.index') }}">
+                                            <i class="fas fa-list me-2"></i> Listado
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{{ route('evaluaciones.reporte') }}">
+                                            <i class="fas fa-chart-bar me-2"></i> Reportes
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+
+                        <!-- Proveedores y Cotizaciones -->
+                        <li class="nav-item">
+                            <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseProveedores" aria-expanded="false">
+                                <i class="fas fa-truck me-2"></i> Proveedores
+                            </a>
+                            <div class="collapse" id="collapseProveedores">
+                                <ul class="nav flex-column ms-3">
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{{ route('proveedores.index') }}">
+                                            <i class="fas fa-building me-2"></i> Proveedores
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{{ route('productos_cotizables.index') }}">
+                                            <i class="fas fa-boxes me-2"></i> Productos
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{{ route('cotizaciones.index') }}">
+                                            <i class="fas fa-file-invoice-dollar me-2"></i> Cotizaciones
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="{{ route('cotizaciones.reporte') }}">
+                                            <i class="fas fa-chart-pie me-2"></i> Reportes
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
                     </ul>
                 </div>
             </nav>

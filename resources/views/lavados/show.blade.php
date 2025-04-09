@@ -256,6 +256,77 @@
                 @endif
             </div>
         </div>
+        @if($lavado->estado == 'completado' || $lavado->estado == 'entregado')
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Evaluación del Servicio</h6>
+        </div>
+        <div class="card-body">
+            @if($lavado->evaluacion)
+                @if($lavado->evaluacion->completada)
+                    <div class="alert alert-success">
+                        <h5>Evaluación completada</h5>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <p><strong>Tiempo de espera:</strong> {{ $lavado->evaluacion->tiempo_espera }}/5</p>
+                            </div>
+                            <div class="col-md-4">
+                                <p><strong>Amabilidad:</strong> {{ $lavado->evaluacion->amabilidad }}/5</p>
+                            </div>
+                            <div class="col-md-4">
+                                <p><strong>Calidad:</strong> {{ $lavado->evaluacion->calidad_servicio }}/5</p>
+                            </div>
+                        </div>
+                        @if($lavado->evaluacion->comentarios)
+                            <p><strong>Comentarios:</strong> {{ $lavado->evaluacion->comentarios }}</p>
+                        @endif
+                    </div>
+                @else
+                    <div class="alert alert-warning">
+                        Enlace de evaluación generado pero aún no completado.
+                        <div class="mt-2">
+                            <div class="input-group">
+                                <input type="text" class="form-control" value="{{ route('evaluaciones.formulario', $lavado->evaluacion->token) }}" id="enlace-evaluacion" readonly>
+                                <button class="btn btn-outline-secondary" type="button" onclick="copiarEnlace()">Copiar</button>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+            @else
+                <p>Todavía no se ha generado un enlace de evaluación para este servicio.</p>
+                <a href="{{ route('evaluaciones.generar', $lavado->id) }}" class="btn btn-primary">
+                    <i class="fas fa-link"></i> Generar enlace de evaluación
+                </a>
+            @endif
+        </div>
+    </div>
+
+    @if(session('token'))
+    <div class="alert alert-success">
+        <p>Enlace generado correctamente. Comparta este enlace con el cliente:</p>
+        <div class="input-group mt-2">
+            <input type="text" class="form-control" value="{{ route('evaluaciones.formulario', session('token')) }}" id="nuevo-enlace" readonly>
+            <button class="btn btn-outline-secondary" type="button" onclick="copiarNuevoEnlace()">Copiar</button>
+        </div>
+    </div>
+
+    <script>
+    function copiarEnlace() {
+        var enlace = document.getElementById("enlace-evaluacion");
+        enlace.select();
+        document.execCommand("copy");
+        alert("Enlace copiado al portapapeles");
+    }
+
+    function copiarNuevoEnlace() {
+        var enlace = document.getElementById("nuevo-enlace");
+        enlace.select();
+        document.execCommand("copy");
+        alert("Enlace copiado al portapapeles");
+    }
+    </script>
+    @endif
+@endif
     </div>
 </div>
 @endsection
